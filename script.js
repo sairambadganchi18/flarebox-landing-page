@@ -1,147 +1,159 @@
 /* ============================
-   COUNTER ANIMATION
+   DOM READY
 ============================ */
+document.addEventListener("DOMContentLoaded", () => {
 
-const counters = document.querySelectorAll(".counter");
+  /* ============================
+     COUNTER ANIMATION (ON VIEW)
+  ============================ */
+  const counters = document.querySelectorAll(".counter");
 
-counters.forEach(counter => {
+  const runCounter = (counter) => {
+    counter.innerText = "0";
 
-counter.innerText = "0";
+    const update = () => {
+      const target = +counter.getAttribute("data-target");
+      const current = +counter.innerText;
+      const increment = target / 80;
 
-const updateCounter = () => {
+      if (current < target) {
+        counter.innerText = Math.ceil(current + increment);
+        setTimeout(update, 20);
+      } else {
+        counter.innerText = target + "+";
+      }
+    };
 
-const target = +counter.getAttribute("data-target");
-const current = +counter.innerText;
+    update();
+  };
 
-const increment = target / 100;
+  const counterObserver = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        runCounter(entry.target);
+        obs.unobserve(entry.target);
+      }
+    });
+  });
 
-if(current < target){
+  counters.forEach(counter => counterObserver.observe(counter));
 
-counter.innerText = `${Math.ceil(current + increment)}`;
-setTimeout(updateCounter,20);
 
-}else{
+  /* ============================
+     DARK MODE TOGGLE + SAVE
+  ============================ */
+  const toggle = document.getElementById("themeToggle");
 
-counter.innerText = target;
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
 
-}
+      const isLight = document.body.classList.contains("dark-mode");
+      toggle.innerText = isLight ? "☀️" : "🌙";
 
-};
+      localStorage.setItem("theme", isLight ? "light" : "dark");
+    });
 
-updateCounter();
+    // Load saved theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "light") {
+      document.body.classList.add("dark-mode");
+      toggle.innerText = "☀️";
+    }
+  }
+
+
+  /* ============================
+     SMOOTH SCROLL
+  ============================ */
+  document.querySelectorAll('.nav-links a').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+
+      const target = document.querySelector(this.getAttribute('href'));
+
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    });
+  });
+
+
+  /* ============================
+     ACTIVE NAV LINK
+  ============================ */
+  const sections = document.querySelectorAll("section");
+  const navLinks = document.querySelectorAll(".nav-links a");
+
+  window.addEventListener("scroll", () => {
+    let current = "";
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 150;
+
+      if (window.scrollY >= sectionTop) {
+        current = section.getAttribute("id");
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove("active");
+
+      if (link.getAttribute("href") === "#" + current) {
+        link.classList.add("active");
+      }
+    });
+  });
+
+
+  /* ============================
+     SCROLL REVEAL (SMOOTH)
+  ============================ */
+  const revealElements = document.querySelectorAll(
+    ".feature-box, .user-card, .stat, .cta-content"
+  );
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("show");
+      }
+    });
+  }, { threshold: 0.2 });
+
+  revealElements.forEach(el => revealObserver.observe(el));
+
+
+  /* ============================
+     NAVBAR SCROLL EFFECT
+  ============================ */
+  const navbar = document.querySelector(".navbar");
+
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 50);
+  });
+
+
+  /* ============================
+     BUTTON RIPPLE EFFECT 🔥
+  ============================ */
+  document.querySelectorAll("button").forEach(button => {
+    button.addEventListener("click", function(e) {
+      const circle = document.createElement("span");
+      const diameter = Math.max(this.clientWidth, this.clientHeight);
+
+      circle.style.width = circle.style.height = diameter + "px";
+      circle.style.left = e.clientX - this.offsetLeft - diameter / 2 + "px";
+      circle.style.top = e.clientY - this.offsetTop - diameter / 2 + "px";
+      circle.classList.add("ripple");
+
+      const ripple = this.getElementsByClassName("ripple")[0];
+      if (ripple) ripple.remove();
+
+      this.appendChild(circle);
+    });
+  });
 
 });
-
-
-
-/* ============================
-   DARK MODE TOGGLE
-============================ */
-
-const toggle = document.getElementById("themeToggle");
-
-if(toggle){
-
-toggle.onclick = function(){
-
-document.body.classList.toggle("dark-mode");
-
-if(document.body.classList.contains("dark-mode")){
-toggle.innerText = "☀️";
-}else{
-toggle.innerText = "🌙";
-}
-
-};
-
-}
-
-
-
-/* ============================
-   SMOOTH NAVBAR SCROLL
-============================ */
-
-document.querySelectorAll('.nav-links a').forEach(anchor => {
-
-anchor.addEventListener('click', function(e){
-
-e.preventDefault();
-
-const targetId = this.getAttribute('href');
-const targetSection = document.querySelector(targetId);
-
-if(targetSection){
-
-targetSection.scrollIntoView({
-behavior: "smooth"
-});
-
-}
-
-});
-
-});
-
-
-
-/* ============================
-   ACTIVE NAV LINK ON SCROLL
-============================ */
-
-const sections = document.querySelectorAll("section");
-const navLinks = document.querySelectorAll(".nav-links a");
-
-window.addEventListener("scroll", () => {
-
-let current = "";
-
-sections.forEach(section => {
-
-const sectionTop = section.offsetTop - 150;
-
-if(pageYOffset >= sectionTop){
-current = section.getAttribute("id");
-}
-
-});
-
-navLinks.forEach(link => {
-
-link.classList.remove("active");
-
-if(link.getAttribute("href") === "#" + current){
-link.classList.add("active");
-}
-
-});
-
-});
-
-
-
-/* ============================
-   SCROLL REVEAL ANIMATION
-============================ */
-
-const observer = new IntersectionObserver((entries) => {
-
-entries.forEach((entry) => {
-
-if(entry.isIntersecting){
-
-entry.target.classList.add("show");
-
-}
-
-});
-
-});
-
-
-
-const hiddenElements = document.querySelectorAll(
-".user-card, .feature-box, .how-card, .stat"
-);
-
-hiddenElements.forEach((el) => observer.observe(el));
